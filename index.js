@@ -1,8 +1,6 @@
 var express = require("express");
 var app = express();
 
-var server = app.listen(80, function(){
-    console.log("Node.js is listening to PORT:" + server.address().port);
-});
+var server = app.listen(80);
 
 app.use(express.static('public'));
