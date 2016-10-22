@@ -1,0 +1,21 @@
+head
+	meta(charset='utf-8')
+	title #{title}
+body
+
+	h1 #{title}
+
+	form(action=action, method="POST")
+
+		table
+			tr
+				td
+					span 名前
+				td
+					input(type="text" name="name")
+
+		input(type="submit", value="作成")
+
+include footer
+
+

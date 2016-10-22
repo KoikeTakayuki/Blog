@@ -1,0 +1,67 @@
+head
+	meta(charset='utf-8')
+	title 大会作成
+body
+
+	h1 大会作成
+
+		form(action="create-new-competition", method="POST")
+
+			table
+				tr
+					td
+						span 名前
+					td
+						input(type="text" name="name")
+
+
+				tr
+					td
+						span 会場
+					td
+						select(name="tennis_court_id")
+							each tc in tennisCourts
+								option(value=tc.id) #{tc.name}
+
+				tr
+					td
+						span 日程
+					td
+						select(name="competition_type_id")
+							each t in competitionTypes
+								option(value=t.id) #{t.name}
+
+
+				tr
+					td
+						span 説明
+					td
+						textarea(name="description")
+
+				tr
+					td
+						span 大会形式
+					td
+						select(name="competition_type_id")
+							each t in competitionTypes
+								option(value=t.id) #{t.name}
+
+				tr
+					td
+						span タグ
+					td
+						p
+							each t in competitionTags
+								input(name="competition_tag_id[]" type="checkbox" value=t.id)
+								span #{t.name}
+
+
+
+
+
+
+			input(type="submit", value="作成")
+
+include footer
+
+

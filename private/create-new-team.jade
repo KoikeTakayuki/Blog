@@ -1,0 +1,34 @@
+head
+	meta(charset='utf-8')
+	title 新規チーム作成画面
+body
+
+	h1 新規チーム作成
+	form(action="create-new-team", method="POST")
+		table
+			
+			tr
+				td
+					span 都道府県
+				td
+					select(name="prefecture_id")
+						each p in prefectures
+							option(value=p.id) #{p.name}
+
+			tr
+				td
+					span チーム区分
+				td
+					select(name="team_division_id")
+						each d in divisions
+							option(value=d.id) #{d.name}
+
+			tr
+				td
+					span チーム名
+				td
+					input(type="text", name="name")
+
+		input(type="submit", value="作成")
+
+include footer

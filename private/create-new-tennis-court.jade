@@ -1,0 +1,33 @@
+head
+	meta(charset='utf-8')
+	title 会場作成画面
+body
+
+	h1 会場作成
+
+	form(action="create-new-tennis-court", method="POST")
+		table
+
+			tr
+				td
+					span 名前
+				td
+					input(type="text" name="name")
+
+			tr
+				td
+					span 都道府県
+				td
+					select(name="prefecture_id")
+						each p in prefectures
+							option(value=p.id) #{p.name}
+
+			tr
+				td
+					span 住所
+				td
+					input(type="text" name="address")
+
+		input(type="submit", value="作成")
+
+include footer

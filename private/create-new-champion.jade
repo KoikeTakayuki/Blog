@@ -1,0 +1,40 @@
+head
+	meta(charset='utf-8')
+	title 優勝者作成画面
+body
+
+	h1 優勝者作成
+
+	form(action="create-new-champion", method="POST")
+
+		table
+
+			tr
+				td
+					span 大会
+				td
+					select(name="competition_id")
+						each c in competitions
+							option(value=c.id) #{c.name}
+
+			tr
+				td
+					span プレーヤー1
+				td
+					select(name="player1_id")
+						each p in players
+							option(value=p.id) #{p.name}
+
+			tr
+				td
+					span プレーヤー2
+				td
+					select(name="player2_id")
+						each p in players
+							option(value=p.id) #{p.name}
+
+		input(type="submit", value="作成")
+
+include footer
+
+

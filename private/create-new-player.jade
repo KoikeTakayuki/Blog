@@ -1,0 +1,79 @@
+head
+	meta(charset='utf-8')
+	title 新規プレーヤー作成
+body
+
+	h1 新規プレーヤー作成
+
+		form(action="create-new-player", method="POST")
+
+			table
+				tr
+					td
+						span 名前
+					td
+						input(type="text" name="name")
+
+				tr
+					td
+						span 性別
+					td
+						select(name="gender_id")
+							each g in genders
+								option(value=g.id) #{g.name}
+
+				tr
+					td
+						span 世代
+					td
+						select(name="birth_year")
+							each y in years
+								option(value=y) #{y}
+
+				tr
+					td
+						span プロフィール
+					td
+						textarea(name="profile")
+
+				tr
+					td
+						span 中学校
+					td
+						select(name="junior_high_team_id")
+							option
+							each j in juniorHighTeams
+								option(value=j.id) #{j.name}
+
+				tr
+					td
+						span 高校
+					td
+						select(name="high_school_team_id")
+							option
+							each h in highSchoolTeams
+								option(value=h.id) #{h.name}
+
+				tr
+					td
+						span 大学
+					td
+						select(name="university_team_id")
+							option
+							each u in universityTeams
+								option(value=u.id) #{u.name}
+
+				tr
+					td
+						span 現在の所属
+					td
+						select(name="current_team_id")
+							option
+							each t in allTeams
+								option(value=t.id) #{t.name}
+
+			input(type="submit", value="作成")
+
+include footer
+
+
