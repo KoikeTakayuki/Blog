@@ -1,0 +1,109 @@
+head
+	meta(charset='utf-8')
+	title 試合作成
+body
+
+	h1 試合作成
+
+		form(action="create-new-match", method="POST")
+
+			table
+
+
+				tr
+					td
+						span 大会
+					td
+						select(name="competition_id")
+							each c in competitions
+								option(value=c.id) #{c.name}
+
+
+				tr
+					td
+						span URL
+					td
+						input(type="text" name="url")
+
+				tr
+					td
+						span 日にち
+					td
+						div
+							select(name="date_year")
+								each y in years
+									option(value=y) #{y}
+
+							span 年
+							select(name="date_month")
+								each m in months
+									option(value=m) #{m}
+
+							span 月
+							select(name="date_day")
+								each d in days
+									option(value=d) #{d}
+
+							span 日
+
+				tr
+					td
+						span ラウンド
+					td
+						select(name="round_id")
+							each r in rounds
+								option(value=r.id) #{r.name}
+
+				tr
+					td
+						span ゲーム数
+					td
+						select(name="max_game_count")
+							each gc in maxGameCounts
+								option(value=gc) #{gc}
+
+				tr
+					td
+						span プレーヤー1
+					td
+						select(name="player1_id")
+							each p in players
+								option(value=p.id) #{p.name}
+
+				tr
+					td
+						span プレーヤー2
+					td
+						select(name="player2_id")
+							each p in players
+								option(value=p.id) #{p.name}
+
+				tr
+					td
+						span プレーヤー3
+					td
+						select(name="player3_id")
+							each p in players
+								option(value=p.id) #{p.name}
+
+				tr
+					td
+						span プレーヤー4
+					td
+						select(name="player4_id")
+							each p in players
+								option(value=p.id) #{p.name}
+
+				tr
+					td
+						span シングルス
+					td
+						input(name="is_singles" type="checkbox" value="true")
+						span シングルス
+
+
+			input(type="submit", value="作成")
+
+include footer
+
+

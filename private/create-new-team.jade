@@ -29,6 +29,16 @@ body
 				td
 					input(type="text", name="name")
 
+
+			tr
+				td
+					span 親チーム
+				td
+					select(name="parent_team_id")
+						option
+						each t in teams
+							option(value=t.id) #{t.name}
+
 		input(type="submit", value="作成")
 
 include footer

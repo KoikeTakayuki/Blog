@@ -1,0 +1,17 @@
+head
+	meta(charset='utf-8')
+	title 試合一覧
+body
+
+	h1 試合一覧
+
+	div
+		table
+			each m in matches
+				tr
+					td
+						span #{m.title}
+					td
+						a(href="/match/" + m.id + "/games") スコアをつける
+
+include footer

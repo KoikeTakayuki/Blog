@@ -89,9 +89,11 @@ var COMPETITION_TYPES = [
     { name: 'リーグ', urlString: 'league' }
 ];
 
-var MATCH_TAGS = [
-    { name: 'シングルス', urlString: 'singles' },
-    { name: 'ダブルス', urlString: 'doubles' }
+var COURT_SERFACES = [
+    { name: 'オムニ', urlString: 'omni' },
+    { name: 'クレー', urlString: 'clay' },
+    { name: 'インドア', urlString: 'indoor' },
+    { name: 'ハード', urlString: 'hard' }
 ];
 
 var COMPETITION_TAGS = [
@@ -213,12 +215,12 @@ var insertPrefectures = insertEnumerationData('prefecture', PREFECTURES),
     insertRounds = insertEnumerationData('round', ROUNDS),
     insertGenders = insertEnumerationData('gender', GENDERS),
     insertCompetitionTypes = insertEnumerationData('competition_type', COMPETITION_TYPES),
-    insertMatchTags = insertEnumerationData('match_tag', MATCH_TAGS),
     insertCompetitionTags = insertEnumerationData('competition_tag', COMPETITION_TAGS),
     insertShotDirections = insertEnumerationData('shot_direction', SHOT_DIRECTIONS),
     insertShotTypes = insertEnumerationData('shot_type', SHOT_TYPES),
     insertErrorTypes = insertEnumerationData('error_type', ERROR_TYPES),
     insertWinnerTypes = insertEnumerationData('winner_type', WINNER_TYPES),
+    insertCourtSurfaces = insertEnumerationData('court_surface', COURT_SERFACES),
     insertOtherShotProperties = insertEnumerationData('other_shot_property', OTHER_SHOT_PROPERTIES);
 
 /* DBスキーマ */
@@ -261,22 +263,21 @@ var useDatabase = function (connection, cont) {
 
 /* EnumerationType */
 var createGenderTable = makeEnumerationTypeTable('gender'),
-    createMatchTagTable = makeEnumerationTypeTable('match_tag'),
     createShotDirectionTable = makeEnumerationTypeTable('shot_direction'),
     createShotTypeTable = makeEnumerationTypeTable('shot_type'),
     createOtherShotPropertyTable = makeEnumerationTypeTable('other_shot_property'),
     createCompetitionTagTable = makeEnumerationTypeTable('competition_tag'),
     createCompetitionTypeTable = makeEnumerationTypeTable('competition_type'),
     createRoundTable = makeEnumerationTypeTable('round'),
-    createMatchTagTable = makeEnumerationTypeTable('match_tag'),
     createTeamDivisionTable = makeEnumerationTypeTable('team_division'),
     createPrefectureTable = makeEnumerationTypeTable('prefecture'),
     createErrorTypeTable = makeEnumerationTypeTable('error_type'),
+    createCourtSurfaceTable = makeEnumerationTypeTable('court_surface'),
     createWinnerTypeTable = makeEnumerationTypeTable('winner_type');
 
 
 var createTeamTable = function (connection, cont) {
-    connection.query('CREATE TABLE team(id INT(16) NOT NULL AUTO_INCREMENT, name VARCHAR(16) NOT NULL, url_string VARCHAR(32), prefecture_id INT, team_division_id INT, is_visible BOOLEAN NOT NULL, FOREIGN KEY(prefecture_id) REFERENCES prefecture(id), FOREIGN KEY(team_division_id) REFERENCES team_division(id), PRIMARY KEY(id))', function () {
+    connection.query('CREATE TABLE team(id INT(16) NOT NULL AUTO_INCREMENT, name VARCHAR(16) NOT NULL, url_string VARCHAR(32), prefecture_id INT, team_division_id INT, parent_team_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(prefecture_id) REFERENCES prefecture(id), FOREIGN KEY(team_division_id) REFERENCES team_division(id), FOREIGN KEY(parent_team_id) REFERENCES team(id), PRIMARY KEY(id))', function () {
         console.log('create team table');
         cont(connection);
     });	
@@ -291,7 +292,7 @@ var createPlayerTable = function (connection, cont) {
 
 
 var createTennisCourtTable = function (connection, cont) {
-    connection.query('CREATE TABLE tennis_court(id INT(16) NOT NULL AUTO_INCREMENT, name VARCHAR(32) NOT NULL, prefecture_id INT(16), address VARCHAR(100), longitude INT(16), latitude INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(prefecture_id) REFERENCES prefecture(id), PRIMARY KEY(id))', function () {
+    connection.query('CREATE TABLE tennis_court(id INT(16) NOT NULL AUTO_INCREMENT, name VARCHAR(32) NOT NULL, url VARCHAR(100), phone_number VARCHAR(32), court_surface_id INT(16), prefecture_id INT(16), address VARCHAR(100), longitude INT(16), latitude INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(prefecture_id) REFERENCES prefecture(id), FOREIGN KEY(court_surface_id) REFERENCES court_surface(id), PRIMARY KEY(id))', function () {
 	console.log('create tennis court table');
 	cont(connection);
     });
@@ -315,42 +316,38 @@ var createCompetitionTagsTable = function (connection, cont) {
 
 
 var createChampionTable = function (connection, cont) {
-    connection.query('CREATE TABLE champion(id INT(16) NOT NULL AUTO_INCREMENT, competition_id INT(16) NOT NULL, description INT(16), player1_id INT(16), player2_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), PRIMARY KEY(id))', function (e) {
+    connection.query('CREATE TABLE champion(id INT(16) NOT NULL AUTO_INCREMENT, competition_id INT(16) NOT NULL, description INT(16), player1_id INT(16), player2_id INT(16), is_team_competition BOOLEAN, team_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), FOREIGN KEY(team_id) REFERENCES team(id), PRIMARY KEY(id))', function (e) {
 	console.log('create champion table');
 	cont(connection);
     });
 
 };
 
+var createTeamMatchTable = function (connection, cont) {
+    connection.query('CREATE TABLE team_match(id INT(16) NOT NULL AUTO_INCREMENT, competition_id INT(16), team1_id INT(16), team2_id INT(16), is_team1_winner BOOLEAN, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(team1_id) REFERENCES team(id), FOREIGN KEY(team2_id) REFERENCES team(id), PRIMARY KEY(id))', function (e) {
+    console.log('create team match table');
+    cont(connection);
+    });
+};
 
 var createSoftTennisMatchTable = function (connection, cont) {
-    connection.query('CREATE TABLE soft_tennis_match(id INT(16) NOT NULL AUTO_INCREMENT, title VARCHAR(100) NOT NULL, url VARCHAR(100), competition_id INT(16), round_id INT(16), max_game_count INT(8), player1_id INT(16), player2_id INT(16), player3_id INT(16), player4_id INT(16), previous_match_id INT(16), next_match_id INT(16), is_singles_game BOOLEAN, is_side_a_winner BOOLEAN NOT NULL, is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(round_id) REFERENCES round(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), FOREIGN KEY(player3_id) REFERENCES player(id), FOREIGN KEY(player4_id) REFERENCES player(id), FOREIGN KEY(previous_match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(next_match_id) REFERENCES soft_tennis_match(id), PRIMARY KEY(id))', function (e) {
+    connection.query('CREATE TABLE soft_tennis_match(id INT(16) NOT NULL AUTO_INCREMENT, title VARCHAR(100) NOT NULL, url VARCHAR(100), competition_id INT(16), date DATE, round_id INT(16), tennis_court_id INT(16), max_game_count INT(8), player1_id INT(16), player2_id INT(16), player3_id INT(16), player4_id INT(16), is_singles BOOLEAN, is_side_a_winner BOOLEAN NOT NULL, team_match_id INT(16), team_match_number INT(16), previous_match_id INT(16), next_match_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(round_id) REFERENCES round(id), FOREIGN KEY(tennis_court_id) REFERENCES tennis_court(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), FOREIGN KEY(player3_id) REFERENCES player(id), FOREIGN KEY(player4_id) REFERENCES player(id), FOREIGN KEY(team_match_id) REFERENCES team_match(id), FOREIGN KEY(previous_match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(next_match_id) REFERENCES soft_tennis_match(id), PRIMARY KEY(id))', function (e) {
 	console.log('create soft tennis match table');
 	cont(connection);
     });
 };
 
 var createGameTable = function (connection, cont) {
-    connection.query('CREATE TABLE game(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), game_count_a INT(8) NOT NULL, game_count_b INT(8) NOT NULL, is_side_a_winner BOOLEAN NOT NULL, is_final_game BOOLEAN NOT NULL, previous_game_id INT(16), next_game_id INT(16), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_game_id) REFERENCES game(id), FOREIGN KEY(next_game_id) REFERENCES game(id), PRIMARY KEY(id))', function (e) {
+    connection.query('CREATE TABLE game(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), total_game_count INT(8), game_count_a INT(8) NOT NULL, game_count_b INT(8) NOT NULL, is_side_a_winner BOOLEAN, is_final_game BOOLEAN NOT NULL, previous_game_id INT(16), next_game_id INT(16), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_game_id) REFERENCES game(id), FOREIGN KEY(next_game_id) REFERENCES game(id), PRIMARY KEY(id))', function (e) {
 	console.log('create game table');
 	cont(connection);
     });
-};
-
-
-
-var createMatchTagsTable = function (connection, cont) {
-    connection.query('CREATE TABLE match_tags(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16) NOT NULL, match_tag_id INT(16) NOT NULL, is_visible BOOLEAN NOT NULL, FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(match_tag_id) REFERENCES match_tag(id), PRIMARY KEY(id))', function (e) {
-	console.log('create match tags table');
-	cont(connection);
-    });
-
 };
 
 
 var createPointTable = function (connection, cont) {
-    connection.query('CREATE TABLE point(id INT(16) NOT NULL AUTO_INCREMENT, game_id INT(16), match_id INT(16), count_a INT(8) NOT NULL, count_b INT(8) NOT NULL, max_larry_count INT(8), is_side_a_winner BOOLEAN NOT NULL, is_game_point_for_a BOOLEAN NOT NULL, is_game_point_for_b BOOLEAN NOT NULL, is_match_point_for_a BOOLEAN NOT NULL, is_match_point_for_b BOOLEAN NOT NULL, previous_point_id INT(16), next_point_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_point_id) REFERENCES point(id), FOREIGN KEY(next_point_id) REFERENCES point(id), PRIMARY KEY(id))', function (e) {
-	console.log('create game table');
+    connection.query('CREATE TABLE point(id INT(16) NOT NULL AUTO_INCREMENT, game_id INT(16), match_id INT(16), total_count INT(8), count_a INT(8) NOT NULL, count_b INT(8) NOT NULL, max_larry_count INT(8), is_side_a_winner BOOLEAN, is_game_point_for_a BOOLEAN NOT NULL, is_game_point_for_b BOOLEAN NOT NULL, is_match_point_for_a BOOLEAN NOT NULL, is_match_point_for_b BOOLEAN NOT NULL, previous_point_id INT(16), next_point_id INT(16), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_point_id) REFERENCES point(id), FOREIGN KEY(next_point_id) REFERENCES point(id), PRIMARY KEY(id))', function (e) {
+	console.log('create point table');
 	cont(connection);
     });
 };
@@ -358,8 +355,8 @@ var createPointTable = function (connection, cont) {
 
 
 var createShotTable = function (connection, cont) {
-    connection.query('CREATE TABLE shot(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), game_id INT(16), point_id INT(16), player_id INT(16), larry_count INT(8), is_side_a_winner BOOLEAN NOT NULL, is_backhand BOOLEAN, is_winner BOOLEAN, is_superplay BOOLEAN, winner_type_id INT(16), is_error BOOLEAN, is_unforced_error BOOLEAN, error_type_id INT(16), previous_shot_id INT(16), next_shot_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(point_id) REFERENCES point(id), FOREIGN KEY(player_id) REFERENCES player(id), FOREIGN KEY(winner_type_id) REFERENCES winner_type(id), FOREIGN KEY(error_type_id) REFERENCES error_type(id), FOREIGN KEY(previous_shot_id) REFERENCES shot(id), FOREIGN KEY(next_shot_id) REFERENCES shot(id), PRIMARY KEY(id))', function (e) {
-	console.log('create game table');
+    connection.query('CREATE TABLE shot(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), game_id INT(16), point_id INT(16), player_id INT(16), larry_count INT(8), shot_type_id INT(16) NOT NULL, shot_direction_id INT(16), other_shot_property_id INT(16), is_side_a_winner BOOLEAN NOT NULL, is_backhand BOOLEAN, is_winner BOOLEAN, is_superplay BOOLEAN, winner_type_id INT(16), is_error BOOLEAN, is_unforced_error BOOLEAN, error_type_id INT(16), previous_shot_id INT(16), next_shot_id INT(16), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(point_id) REFERENCES point(id), FOREIGN KEY(player_id) REFERENCES player(id), FOREIGN KEY(shot_type_id) REFERENCES shot_type(id), FOREIGN KEY(shot_direction_id) REFERENCES shot_direction(id), FOREIGN KEY(other_shot_property_id) REFERENCES other_shot_property(id), FOREIGN KEY(winner_type_id) REFERENCES winner_type(id), FOREIGN KEY(error_type_id) REFERENCES error_type(id), FOREIGN KEY(previous_shot_id) REFERENCES shot(id), FOREIGN KEY(next_shot_id) REFERENCES shot(id), PRIMARY KEY(id))', function (e) {
+	console.log('create shot table');
 	cont(connection);
     });
 };
@@ -373,7 +370,6 @@ Promise.resolve(connection)
     .then(Future(createDatabase))
     .then(Future(useDatabase))
     .then(Future(createGenderTable))
-    .then(Future(createMatchTagTable))
     .then(Future(createShotDirectionTable))
     .then(Future(createOtherShotPropertyTable))
     .then(Future(createCompetitionTagTable))
@@ -384,12 +380,13 @@ Promise.resolve(connection)
     .then(Future(createTeamTable))
     .then(Future(createPlayerTable))
     .then(Future(createShotTypeTable))
+    .then(Future(createCourtSurfaceTable))
     .then(Future(createTennisCourtTable))
     .then(Future(createCompetitionTable))
     .then(Future(createCompetitionTagsTable))
     .then(Future(createChampionTable))
+    .then(Future(createTeamMatchTable))
     .then(Future(createSoftTennisMatchTable))
-    .then(Future(createMatchTagsTable))
     .then(Future(createGameTable))
     .then(Future(createPointTable))
     .then(Future(createErrorTypeTable))
@@ -401,12 +398,12 @@ Promise.resolve(connection)
     .then(Future(insertRounds))
     .then(Future(insertGenders))
     .then(Future(insertCompetitionTypes))
-    .then(Future(insertMatchTags))
     .then(Future(insertCompetitionTags))
     .then(Future(insertShotDirections))
     .then(Future(insertShotTypes))
     .then(Future(insertErrorTypes))
     .then(Future(insertWinnerTypes))
+    .then(Future(insertCourtSurfaces))
     .then(Future(insertOtherShotProperties))
     .then(function (connection) {
 	console.log('finish');

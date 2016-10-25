@@ -1,0 +1,18 @@
+head
+	meta(charset='utf-8')
+	title #{game.title} ゲームカウント#{game.game_count_a} - #{game.game_count_b} ポイント一覧
+body
+
+	h1 #{game.title}
+	p ゲームカウント#{game.game_count_a} - #{game.game_count_b} ポイント一覧
+
+	div
+		table
+			each p in points
+				tr
+					td
+						span #{p.count_a} - #{p.count_b}
+					td
+						a(href="/point/" + p.id + "/create-new-shot") ショット作成
+
+include footer

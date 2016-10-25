@@ -1,0 +1,17 @@
+head
+	meta(charset='utf-8')
+	title #{match.title} ゲーム一覧
+body
+
+	h1 #{match.title} ゲーム一覧
+
+	div
+		table
+			each g in games
+				tr
+					td
+						span #{g.game_count_a} - #{g.game_count_b}
+					td
+						a(href="/game/" + g.id + "/points") ポイント一覧
+
+include footer

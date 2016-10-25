@@ -1,0 +1,110 @@
+head
+	meta(charset='utf-8')
+	title ショット作成
+body
+
+	h1 ショット作成
+	p #{point.title}
+	p GC #{point.game_count_a} - #{point.game_count_b}
+	p C #{point.count_a} - #{point.count_b}
+	p #{larryCount}球目
+
+		form(action="create-new-shot", method="POST")
+
+			table
+
+				tr
+					td
+						span プレーヤー
+					td
+						select(name="player_id")
+							each p in players
+								option(value=p.id) #{p.name}
+
+				tr
+					td
+						span ショットタイプ
+					td
+						select(name="shot_type_id")
+							each st in shotTypes
+								option(value=st.id) #{st.name}
+
+				tr
+					td
+						span コース
+					td
+						select(name="shot_direction_id")
+							each sd in shotDirections
+								option(value=sd.id) #{sd.name}
+
+				tr
+					td
+						span その他の性質
+					td
+						select(name="other_shot_property_id")
+							option
+							each osp in otherShotProperties
+								option(value=osp.id) #{osp.name}
+
+				tr
+					td
+						span バックハンド
+					td
+						input(name="is_backhand" type="checkbox" value="true")
+						span バックハンド
+
+				tr
+					td
+						span スーパープレー
+					td
+						input(name="is_superplay" type="checkbox" value="true")
+						span スーパープレー
+
+				tr
+					td
+						span 得点
+					td
+						input(name="is_winner" type="checkbox" value="true")
+						span 得点
+
+				tr
+					td
+						span 得点のタイプ
+					td
+						select(name="winner_type_id")
+							option
+							each wt in winnerTypes
+								option(value=wt.id) #{wt.name}
+
+				tr
+					td
+						span ミス
+					td
+						input(name="is_error" type="checkbox" value="true")
+						span ミス
+
+				tr
+					td
+						span ミスのタイプ
+					td
+						select(name="error_type_id")
+							option
+							each et in errorTypes
+								option(value=et.id) #{et.name}
+
+				tr
+					td
+						span ケアレスミス
+					td
+						input(name="is_unforced_error" type="checkbox" value="true")
+						span ケアレスミス
+
+			input(type="hidden", name="point_id", value=point.id)
+			input(type="hidden", name="game_id", value=point.game_id)
+			input(type="hidden", name="match_id", value=point.match_id)
+			input(type="hidden", name="larry_count", value=larryCount)
+			input(type="submit", value="作成")
+
+include footer
+
+

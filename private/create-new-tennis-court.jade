@@ -14,6 +14,27 @@ body
 				td
 					input(type="text" name="name")
 
+
+			tr
+				td
+					span URL
+				td
+					input(type="text" name="url")
+
+			tr
+				td
+					span 電話番号
+				td
+					input(type="text" name="phone_number")
+
+			tr
+				td
+					span コートサーフェス
+				td
+					select(name="court_surface_id")
+						each s in surfaces
+							option(value=s.id) #{s.name}
+
 			tr
 				td
 					span 都道府県
