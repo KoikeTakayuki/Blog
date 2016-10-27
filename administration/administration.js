@@ -8,6 +8,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/view');
+app.use(express.static(__dirname + '/public'));
 
 /* トップページ */
 app.get('/', controllers.administrationTop.index);

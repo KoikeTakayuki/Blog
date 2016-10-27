@@ -2,7 +2,7 @@ head
 	meta(charset='utf-8')
 	title ショット作成
 	script(type='text/javascript', src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js")
-	script(type='text/javascript', src='/scripts/shot.js')
+	script(type='text/javascript', src='/scripts/service.js')
 body
 
 	h1 ショット作成
@@ -41,14 +41,6 @@ body
 
 				tr
 					td
-						span 深さ
-					td
-						select(name="ball_depth_id")
-							each d in depths
-								option(value=d.id) #{d.name}
-
-				tr
-					td
 						span 攻めor守り
 					td
 						select(name="situation_id")
@@ -57,26 +49,10 @@ body
 
 				tr
 					td
-						span その他の性質
+						span ファーストサービス
 					td
-						select(name="other_shot_property_id")
-							option
-							each osp in otherShotProperties
-								option(value=osp.id) #{osp.name}
-
-				tr
-					td
-						span バックハンド
-					td
-						input(name="is_backhand" type="checkbox" value="true")
-						span バックハンド
-
-				tr
-					td
-						span チャンスボール
-					td
-						input(name="is_chance" type="checkbox" value="true")
-						span チャンスボール
+						input(name="is_first_service" type="checkbox" value="true")
+						span ファーストサービス
 
 				tr
 					td
@@ -87,43 +63,19 @@ body
 
 				tr
 					td
-						span 得点
+						span サービスエース
 					td
 						input(name="is_winner" type="checkbox" value="true")
-
-				tr(class="winner-form")
-					td
-						span 得点の種類
-
-					td
-						select(name="winner_type_id" class="winner")
-							each wt in winnerTypes
-								option(value=wt.id) #{wt.name}
-
-				tr(class="winner-form")
-					td
-						span スーパープレー
-					td
-						input(name="is_superplay" type="checkbox" value="true" class="winner")
+						span サービスエース
 
 				tr
 					td
-						span ミス
+						span ダブルフォルト
 					td
 						input(name="is_error" type="checkbox" value="true")
+						span ダブルフォルト
 
-				tr(class="error-form")
-					td
-						span ミスの種類
-					td
-						select(name="error_type_id" class="error")
-							each et in errorTypes
-								option(value=et.id) #{et.name}
-				tr(class="error-form")
-					td
-						span ケアレスミス
-					td
-						input(name="is_unforced_error" type="checkbox" value="true" class="error")
+
 
 			input(type="hidden", name="point_id", value=point.id)
 			input(type="hidden", name="game_id", value=point.game_id)

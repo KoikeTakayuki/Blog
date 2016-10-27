@@ -7,6 +7,13 @@ var connection = mysql.createConnection(dbConfig, function (err) {
     }
 });
 
+var TACTICS = [
+    { name: '雁行陣', id: '1up-1back' },
+    { name: 'W後衛', id: '2-back' },
+    { name: 'W前衛', id: '2-up' },
+    { name: 'その他', id: 'other' },
+];
+
 var PREFECTURES = [
     { name: '北海道', urlString: 'hokkaido'},
     { name: '青森県', urlString: 'aomori' },
@@ -98,7 +105,8 @@ var COURT_SERFACES = [
 
 var COMPETITION_TAGS = [
     { name: '天皇杯', urlString: 'emperors-cup' },
-    { name: 'インターハイ', urlString: 'interscholastic-athletic-meet' }
+    { name: 'インターハイ', urlString: 'interscholastic-athletic-meet' },
+    { name: '2016', urlString: '2016' }
 ];
 
 var SHOT_DIRECTIONS = [
@@ -110,10 +118,7 @@ var SHOT_DIRECTIONS = [
 ];
 
 var SHOT_TYPES = [
-    { name: '正クロスボレー', urlString: 'volley' },
-    { name: '逆クロスボレー', urlString: 'volley' },
-    { name: '右ストレートボレー', urlString: 'volley' },
-    { name: '左ストレートボレー', urlString: 'volley' },
+    { name: 'ボレー', urlString: 'volley' },
     { name: 'ストップボレー', urlString: 'stop-volley' },
     { name: 'ハイボレー', urlString: 'high-volley' },
     { name: 'ローボレー', urlString: 'low-volley' },
@@ -125,7 +130,9 @@ var SHOT_TYPES = [
     { name: '中ロブ', urlString: 'offensive-lob' },
     { name: 'スライス', urlString: 'slice' },
     { name: 'ドロップ', urlString: 'drop' },
-    { name: 'フォロー', urlString: 'emergency-shot' }
+    { name: 'フォロー', urlString: 'emergency-shot' },
+    { name: 'オーバーヘッドサービス', urlStirng: 'overhead-service'},
+    { name: 'カットサービス', urlStirng: 'cut-service'},
 ];
 
 var ERROR_TYPES = [
@@ -134,21 +141,34 @@ var ERROR_TYPES = [
     { name: 'ダブルフォルト', urlString: 'double-fault' },
     { name: 'ネットタッチ', urlString: 'net-touch' },
     { name: 'オーバーネット', urlString: 'over-net' },
-    { name: 'インターフェアー', urlString: 'interfere' }
+    { name: 'インターフェアー', urlString: 'interfere' },
+    { name: 'ダイレクト', urlString: 'direct' }
 ];
 
 var OTHER_SHOT_PROPERTIES = [
-    { name: 'ブロックボレー', urlString: 'block-volley' },
-    { name: 'ポーチ', urlString: 'offensive-volley' },
-    { name: '誘い', urlString: 'defensive-volley' },
     { name: 'ネットイン', urlString: 'net-in' },
-    { name: 'アングル', urlString: 'angle' }
+    { name: 'アングル', urlString: 'angle' },
+    { name: 'ブロックボレー', urlString: 'block-volley' },
+    { name: '正クロスポーチ', urlString: '' },
+    { name: '逆クロスポーチ', urlString: '' },
+    { name: '右ストレートポーチ', urlString: '' },
+    { name: '左ストレートポーチ', urlString: '' },
+    { name: '正クロス誘い', urlString: '' },
+    { name: '逆クロス誘い', urlString: '' },
+    { name: '右ストレート誘い', urlString: '' },
+    { name: '左ストレート誘い', urlString: '' },
 ];
 
 var WINNER_TYPES = [
     { name: 'エース', urlString: 'no-tache-ace' },
     { name: 'ネットプレー', urlString: 'net-play' },
     { name: 'パッシング', urlStirng: 'passing-shot' },
+];
+
+var SITUATIONS = [
+    { name: '攻め', urlStirng: 'offensive' },
+    { name: '守り', urlStirng: 'defensive'},
+    { name: '中立', urlStirng: 'neutral'}
 ];
 
 /* Utility */
@@ -221,7 +241,9 @@ var insertPrefectures = insertEnumerationData('prefecture', PREFECTURES),
     insertErrorTypes = insertEnumerationData('error_type', ERROR_TYPES),
     insertWinnerTypes = insertEnumerationData('winner_type', WINNER_TYPES),
     insertCourtSurfaces = insertEnumerationData('court_surface', COURT_SERFACES),
-    insertOtherShotProperties = insertEnumerationData('other_shot_property', OTHER_SHOT_PROPERTIES);
+    insertOtherShotProperties = insertEnumerationData('other_shot_property', OTHER_SHOT_PROPERTIES),
+    insertTactics = insertEnumerationData('tactics', TACTICS),
+    insertSituations = insertEnumerationData('situation', SITUATIONS);
 
 /* DBスキーマ */
 var dropDatabase = function (connection, cont) {
@@ -273,7 +295,9 @@ var createGenderTable = makeEnumerationTypeTable('gender'),
     createPrefectureTable = makeEnumerationTypeTable('prefecture'),
     createErrorTypeTable = makeEnumerationTypeTable('error_type'),
     createCourtSurfaceTable = makeEnumerationTypeTable('court_surface'),
-    createWinnerTypeTable = makeEnumerationTypeTable('winner_type');
+    createWinnerTypeTable = makeEnumerationTypeTable('winner_type'),
+    createTacticsTable = makeEnumerationTypeTable('tactics'),
+    createSituationTable = makeEnumerationTypeTable('situation');
 
 
 var createTeamTable = function (connection, cont) {
@@ -331,7 +355,7 @@ var createTeamMatchTable = function (connection, cont) {
 };
 
 var createSoftTennisMatchTable = function (connection, cont) {
-    connection.query('CREATE TABLE soft_tennis_match(id INT(16) NOT NULL AUTO_INCREMENT, title VARCHAR(100) NOT NULL, url VARCHAR(100), competition_id INT(16), date DATE, round_id INT(16), tennis_court_id INT(16), max_game_count INT(8), player1_id INT(16), player2_id INT(16), player3_id INT(16), player4_id INT(16), is_singles BOOLEAN, is_side_a_winner BOOLEAN NOT NULL, team_match_id INT(16), team_match_number INT(16), previous_match_id INT(16), next_match_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(round_id) REFERENCES round(id), FOREIGN KEY(tennis_court_id) REFERENCES tennis_court(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), FOREIGN KEY(player3_id) REFERENCES player(id), FOREIGN KEY(player4_id) REFERENCES player(id), FOREIGN KEY(team_match_id) REFERENCES team_match(id), FOREIGN KEY(previous_match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(next_match_id) REFERENCES soft_tennis_match(id), PRIMARY KEY(id))', function (e) {
+    connection.query('CREATE TABLE soft_tennis_match(id INT(16) NOT NULL AUTO_INCREMENT, title VARCHAR(100) NOT NULL, url VARCHAR(100), competition_id INT(16), date DATE, round_id INT(16), tennis_court_id INT(16), max_game_count INT(8), player1_id INT(16), player2_id INT(16), player3_id INT(16), player4_id INT(16), tactics_a_id INT(16), tactics_b_id INT(16), is_singles BOOLEAN, is_side_a_winner BOOLEAN, team_match_id INT(16), team_match_number INT(16), previous_match_id INT(16), next_match_id INT(16), is_visible BOOLEAN NOT NULL, FOREIGN KEY(competition_id) REFERENCES competition(id), FOREIGN KEY(round_id) REFERENCES round(id), FOREIGN KEY(tennis_court_id) REFERENCES tennis_court(id), FOREIGN KEY(player1_id) REFERENCES player(id), FOREIGN KEY(player2_id) REFERENCES player(id), FOREIGN KEY(player3_id) REFERENCES player(id), FOREIGN KEY(player4_id) REFERENCES player(id), FOREIGN KEY(team_match_id) REFERENCES team_match(id), FOREIGN KEY(tactics_a_id) REFERENCES tactics(id), FOREIGN KEY(tactics_b_id) REFERENCES tactics(id), FOREIGN KEY(previous_match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(next_match_id) REFERENCES soft_tennis_match(id), PRIMARY KEY(id))', function (e) {
 	console.log('create soft tennis match table');
 	cont(connection);
     });
@@ -346,7 +370,7 @@ var createGameTable = function (connection, cont) {
 
 
 var createPointTable = function (connection, cont) {
-    connection.query('CREATE TABLE point(id INT(16) NOT NULL AUTO_INCREMENT, game_id INT(16), match_id INT(16), total_count INT(8), count_a INT(8) NOT NULL, count_b INT(8) NOT NULL, max_larry_count INT(8), is_side_a_winner BOOLEAN, is_game_point_for_a BOOLEAN NOT NULL, is_game_point_for_b BOOLEAN NOT NULL, is_match_point_for_a BOOLEAN NOT NULL, is_match_point_for_b BOOLEAN NOT NULL, previous_point_id INT(16), next_point_id INT(16), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_point_id) REFERENCES point(id), FOREIGN KEY(next_point_id) REFERENCES point(id), PRIMARY KEY(id))', function (e) {
+    connection.query('CREATE TABLE point(id INT(16) NOT NULL AUTO_INCREMENT, game_id INT(16), match_id INT(16), total_count INT(8), count_a INT(8) NOT NULL, count_b INT(8) NOT NULL, max_larry_count INT(8), is_side_a_winner BOOLEAN, is_game_point_for_a BOOLEAN NOT NULL, is_game_point_for_b BOOLEAN NOT NULL, is_match_point_for_a BOOLEAN NOT NULL, is_match_point_for_b BOOLEAN NOT NULL, is_deuce BOOLEAN NOT NULL, previous_point_id INT(16), next_point_id INT(16), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(previous_point_id) REFERENCES point(id), FOREIGN KEY(next_point_id) REFERENCES point(id), PRIMARY KEY(id))', function (e) {
 	console.log('create point table');
 	cont(connection);
     });
@@ -355,20 +379,18 @@ var createPointTable = function (connection, cont) {
 
 
 var createShotTable = function (connection, cont) {
-    connection.query('CREATE TABLE shot(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), game_id INT(16), point_id INT(16), player_id INT(16), larry_count INT(8), shot_type_id INT(16) NOT NULL, shot_direction_id INT(16), other_shot_property_id INT(16), is_side_a_winner BOOLEAN NOT NULL, is_backhand BOOLEAN, is_winner BOOLEAN, is_superplay BOOLEAN, winner_type_id INT(16), is_error BOOLEAN, is_unforced_error BOOLEAN, error_type_id INT(16), previous_shot_id INT(16), next_shot_id INT(16), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(point_id) REFERENCES point(id), FOREIGN KEY(player_id) REFERENCES player(id), FOREIGN KEY(shot_type_id) REFERENCES shot_type(id), FOREIGN KEY(shot_direction_id) REFERENCES shot_direction(id), FOREIGN KEY(other_shot_property_id) REFERENCES other_shot_property(id), FOREIGN KEY(winner_type_id) REFERENCES winner_type(id), FOREIGN KEY(error_type_id) REFERENCES error_type(id), FOREIGN KEY(previous_shot_id) REFERENCES shot(id), FOREIGN KEY(next_shot_id) REFERENCES shot(id), PRIMARY KEY(id))', function (e) {
-	console.log('create shot table');
+    connection.query('CREATE TABLE shot(id INT(16) NOT NULL AUTO_INCREMENT, match_id INT(16), game_id INT(16), point_id INT(16), player_id INT(16), larry_count INT(8), shot_type_id INT(16) NOT NULL, shot_direction_id INT(16), situation_id INT(16), other_shot_property_id INT(16), is_first_service BOOLEAN, is_net_rush BOOLEAN NOT NULL, is_backhand BOOLEAN NOT NULL, is_chance BOOLEAN NOT NULL, is_second_receive BOOLEAN NOT NULL, is_winner BOOLEAN NOT NULL, is_superplay BOOLEAN NOT NULL, winner_type_id INT(16), is_error BOOLEAN NOT NULL, is_unforced_error BOOLEAN NOT NULL, error_type_id INT(16), previous_shot_id INT(16), next_shot_id INT(16), FOREIGN KEY(match_id) REFERENCES soft_tennis_match(id), FOREIGN KEY(game_id) REFERENCES game(id), FOREIGN KEY(point_id) REFERENCES point(id), FOREIGN KEY(player_id) REFERENCES player(id), FOREIGN KEY(shot_type_id) REFERENCES shot_type(id), FOREIGN KEY(shot_direction_id) REFERENCES shot_direction(id), FOREIGN KEY(other_shot_property_id) REFERENCES other_shot_property(id), FOREIGN KEY(winner_type_id) REFERENCES winner_type(id), FOREIGN KEY(error_type_id) REFERENCES error_type(id), FOREIGN KEY(previous_shot_id) REFERENCES shot(id), FOREIGN KEY(next_shot_id) REFERENCES shot(id), FOREIGN KEY(situation_id) REFERENCES situation(id), PRIMARY KEY(id))', function (e) {
+
+    console.log('create shot table');
 	cont(connection);
     });
 };
-
-
-
-
 
 Promise.resolve(connection)
     .then(Future(dropDatabase))
     .then(Future(createDatabase))
     .then(Future(useDatabase))
+    .then(Future(createTacticsTable))
     .then(Future(createGenderTable))
     .then(Future(createShotDirectionTable))
     .then(Future(createOtherShotPropertyTable))
@@ -392,7 +414,9 @@ Promise.resolve(connection)
     .then(Future(createErrorTypeTable))
     .then(Future(createWinnerTypeTable))
     .then(Future(createShotTypeTable))
+    .then(Future(createSituationTable))
     .then(Future(createShotTable))
+    .then(Future(insertTactics))
     .then(Future(insertPrefectures))
     .then(Future(insertTeamDivisions))
     .then(Future(insertRounds))
@@ -405,7 +429,11 @@ Promise.resolve(connection)
     .then(Future(insertWinnerTypes))
     .then(Future(insertCourtSurfaces))
     .then(Future(insertOtherShotProperties))
+    .then(Future(insertSituations))
     .then(function (connection) {
-	console.log('finish');
-	connection.end();
+        console.log('finish');
+        connection.end();
+    }).catch(function (e) {
+        conncection.end();
+        throw e;
     });

@@ -96,6 +96,22 @@ body
 
 				tr
 					td
+						span 戦術A
+					td
+						select(name="tactics_a_id")
+							each t in tactics
+								option(value=t.id) #{t.name}
+
+				tr
+					td
+						span 戦術B
+					td
+						select(name="tactics_b_id")
+							each t in tactics
+								option(value=t.id) #{t.name}
+
+				tr
+					td
 						span シングルス
 					td
 						input(name="is_singles" type="checkbox" value="true")
